@@ -13,7 +13,7 @@ schedule_model_training()
 '''
     schedule model re-training
 '''
-scheduler.add_job(id='Scheduled Task', func=schedule_model_training, trigger="interval", seconds=30)
+scheduler.add_job(id='Scheduled Task', func=schedule_model_training, trigger="interval", seconds=3600)
 scheduler.start()
 
 

@@ -4,3 +4,4 @@ flask_cors
 flask_apscheduler
 certifi~=2020.12.5
 StandardScaler
+gunicorn

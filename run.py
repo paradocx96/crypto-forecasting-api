@@ -48,5 +48,58 @@ def predict():
     return response, 200
 
 
+@app.route('/crypto-currency/predict/<name>')
+def predict_currency(name=None):
+    if is_training():
+        response = jsonify({
+            "message": "all forecasting models are training now!",
+            "code": 100
+        })
+    else:
+        data = dict()
+        
+        if CURRENCIES[name]["enable"] and CURRENCIES[name]["available_data"]:
+            data = {
+                "price": CURRENCIES[name]["price"],
+                "volume": CURRENCIES[name]["volume"],
+                "market_cap": CURRENCIES[name]["market_cap"]
+            }
+
+        response = jsonify({
+            "code": 200,
+            "message": "Success",
+            "data": data
+        })
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response, 200
+
+
+@app.route('/crypto-currency/predict/<name>/<value>')
+def predict_currency_action(name=None, value=None):
+    if is_training():
+        response = jsonify({
+            "message": "all forecasting models are training now!",
+            "code": 100
+        })
+    else:
+        data = dict()
+        
+        if CURRENCIES[name]["enable"] and CURRENCIES[name]["available_data"]:
+            data = {
+                "exceeded": round(CURRENCIES[name][value]["exceeded"], 2),
+                "score": round(CURRENCIES[name][value]["score"], 5),
+                "today": round(CURRENCIES[name][value]["today"], 2),
+                "tomorrow": round(CURRENCIES[name][value]["tomorrow"], 2)
+            }
+
+        response = jsonify({
+            "code": 200,
+            "message": "Success",
+            "data": data
+        })
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response, 200
+
+
 if __name__ == "__main__":
     app.run(port=5000)

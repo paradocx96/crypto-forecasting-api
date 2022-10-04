@@ -123,9 +123,8 @@ def add_news():
         # save details
         response = mongo.db.news.insert_one(
             {'title': _title, 'description': _description, 'author': _author, 'date': _data})
-        print(response)
 
-        resp = jsonify('Create Successfully!')
+        resp = jsonify('News Create Successfully!')
         resp.status_code = 200
         return resp
     else:
@@ -162,9 +161,8 @@ def update_news():
             {'_id': ObjectId(_id['$oid']) if '$oid' in _id else ObjectId(_id)},
             {'$set': {'title': _title, 'description': _description, 'author': _author, 'date': _data}}
         )
-        print(news)
 
-        resp = jsonify('Update Successfully!')
+        resp = jsonify('News Update Successfully!')
         resp.status_code = 200
         return resp
     else:
@@ -174,7 +172,77 @@ def update_news():
 @app.route('/news/delete/<id>', methods=['DELETE'])
 def delete_news(id):
     mongo.db.news.delete_one({'_id': ObjectId(id)})
-    resp = jsonify('Deleted successfully!')
+    resp = jsonify('News Deleted successfully!')
+    resp.status_code = 200
+    return resp
+
+
+# Currency Data Endpoints
+@app.route('/currency/add', methods=['POST'])
+def add_currency():
+    _json = request.json
+    _name = _json['name']
+    _code = _json['code']
+    _description = _json['description']
+    _image = _json['image']
+    _date = datetime.now()
+
+    # validate the received values
+    if _name and _code and _description and _image and _date and request.method == 'POST':
+        # save details
+        response = mongo.db.currency.insert_one(
+            {'name': _name, 'code': _code, 'description': _description, 'image': _image, 'date': _date})
+
+        resp = jsonify('Currency Create Successfully!')
+        resp.status_code = 200
+        return resp
+    else:
+        return not_found()
+
+
+@app.route('/currency/all')
+def all_currency():
+    currency = mongo.db.currency.find()
+    resp = dumps(currency, indent=2)
+    return resp
+
+
+@app.route('/currency/<id>')
+def get_currency_by_id(id):
+    currency = mongo.db.currency.find_one({'_id': ObjectId(id)})
+    resp = dumps(currency, indent=2)
+    return resp
+
+
+@app.route('/currency/update', methods=['PUT'])
+def update_currency():
+    _json = request.json
+    _id = _json['_id']
+    _name = _json['name']
+    _code = _json['code']
+    _description = _json['description']
+    _image = _json['image']
+    _date = datetime.now()
+
+    # validate the received values
+    if _name and _code and _description and _image and _date and request.method == 'PUT':
+        # save edits
+        currency = mongo.db.currency.update_one(
+            {'_id': ObjectId(_id['$oid']) if '$oid' in _id else ObjectId(_id)},
+            {'$set': {'name': _name, 'code': _code, 'description': _description, 'image': _image, 'date': _date}}
+        )
+
+        resp = jsonify('Currency Update Successfully!')
+        resp.status_code = 200
+        return resp
+    else:
+        return not_found()
+
+
+@app.route('/currency/delete/<id>', methods=['DELETE'])
+def delete_currency(id):
+    mongo.db.currency.delete_one({'_id': ObjectId(id)})
+    resp = jsonify('Currency Deleted successfully!')
     resp.status_code = 200
     return resp
 

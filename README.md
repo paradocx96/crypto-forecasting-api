@@ -90,3 +90,42 @@
 
     Ex: http://127.0.0.1:5000/news/delete/633b563a98178d25528e4ca5
 
+### Currency Endpoints
+
+##### Currency Create
+
+    http://127.0.0.1:5000/currency/add
+
+    {
+    "name": "", 
+    "code": "", 
+    "description": "", 
+    "image": "https://example.com/example.jpg"
+    }
+
+##### Currency Get All
+
+    http://127.0.0.1:5000/currency/all
+
+##### Currency Get By id
+
+    http://127.0.0.1:5000/currency/<id>
+
+    Ex: http://127.0.0.1:5000/currency/633b563a98178d25528e4ca5
+
+##### Currency Update
+
+    http://127.0.0.1:5000/currency/update
+
+    {
+    "_id":"",
+    "name": "", 
+    "code": "", 
+    "description": "", 
+    "image": "https://example.com/example.jpg"
+    }
+
+##### Currency Delete
+    http://127.0.0.1:5000/currency/delete/<id>
+
+    Ex: http://127.0.0.1:5000/currency/delete/633b563a98178d25528e4ca5

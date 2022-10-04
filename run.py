@@ -1,13 +1,20 @@
-from flask import Flask, jsonify
-from flask_cors import CORS
+from bson.json_util import dumps
+from bson.objectid import ObjectId
+from datetime import datetime
+from flask import Flask, jsonify, request
 from flask_apscheduler import APScheduler
-
+from flask_cors import CORS
+from flask_pymongo import PyMongo
 from model import schedule_model_training, is_training, CURRENCIES
 
 app = Flask(__name__)
-cors = CORS(app, resources={r"/crypto-currency/*": {"origins": "*"}})
+cors = CORS(app, resources={r"/*": {"origins": "*"}})
 app.config['CORS_HEADERS'] = 'Content-Type'
 scheduler = APScheduler()
+
+# Mongo Config
+app.config["MONGO_URI"] = 'mongodb+srv://ssd:root@ead.vuzt9we.mongodb.net/de_db?retryWrites=true&w=majority'
+mongo = PyMongo(app)
 
 schedule_model_training()
 '''
@@ -17,11 +24,12 @@ scheduler.add_job(id='Scheduled Task', func=schedule_model_training, trigger="in
 scheduler.start()
 
 
-@app.route('/crypto-currency', methods=['GET'])
+@app.route('/', methods=['GET'])
 def index():
-    return f"<div align='center'><h2>Crypto Currency Forecasting Sever is Active</h2></div>"
+    return jsonify({'server': 'active', 'message': 'Crypto Currency Forecasting Sever is Active'})
 
 
+# Crypto Currency Endpoints
 @app.route("/crypto-currency/predict", methods=['GET'])
 def predict():
     if is_training():
@@ -57,7 +65,7 @@ def predict_currency(name=None):
         })
     else:
         data = dict()
-        
+
         if CURRENCIES[name]["enable"] and CURRENCIES[name]["available_data"]:
             data = {
                 "price": CURRENCIES[name]["price"],
@@ -83,7 +91,7 @@ def predict_currency_action(name=None, value=None):
         })
     else:
         data = dict()
-        
+
         if CURRENCIES[name]["enable"] and CURRENCIES[name]["available_data"]:
             data = {
                 "exceeded": round(CURRENCIES[name][value]["exceeded"], 2),
@@ -99,6 +107,88 @@ def predict_currency_action(name=None, value=None):
         })
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response, 200
+
+
+# News Endpoints
+@app.route('/news/add', methods=['POST'])
+def add_news():
+    _json = request.json
+    _title = _json['title']
+    _description = _json['description']
+    _author = _json['author']
+    _data = datetime.now()
+
+    # validate the received values
+    if _title and _description and _author and _data and request.method == 'POST':
+        # save details
+        response = mongo.db.news.insert_one(
+            {'title': _title, 'description': _description, 'author': _author, 'date': _data})
+        print(response)
+
+        resp = jsonify('Create Successfully!')
+        resp.status_code = 200
+        return resp
+    else:
+        return not_found()
+
+
+@app.route('/news/all')
+def all_news():
+    news = mongo.db.news.find()
+    resp = dumps(news, indent=2)
+    return resp
+
+
+@app.route('/news/<id>')
+def get_news_by_id(id):
+    news = mongo.db.news.find_one({'_id': ObjectId(id)})
+    resp = dumps(news, indent=2)
+    return resp
+
+
+@app.route('/news/update', methods=['PUT'])
+def update_news():
+    _json = request.json
+    _id = _json['_id']
+    _title = _json['title']
+    _description = _json['description']
+    _author = _json['author']
+    _data = datetime.now()
+
+    # validate the received values
+    if _title and _description and _author and _data and _id and request.method == 'PUT':
+        # save edits
+        news = mongo.db.news.update_one(
+            {'_id': ObjectId(_id['$oid']) if '$oid' in _id else ObjectId(_id)},
+            {'$set': {'title': _title, 'description': _description, 'author': _author, 'date': _data}}
+        )
+        print(news)
+
+        resp = jsonify('Update Successfully!')
+        resp.status_code = 200
+        return resp
+    else:
+        return not_found()
+
+
+@app.route('/news/delete/<id>', methods=['DELETE'])
+def delete_news(id):
+    mongo.db.news.delete_one({'_id': ObjectId(id)})
+    resp = jsonify('Deleted successfully!')
+    resp.status_code = 200
+    return resp
+
+
+@app.errorhandler(404)
+def not_found(error=None):
+    message = {
+        'status': 404,
+        'message': 'Not Found: ' + request.url,
+    }
+    resp = jsonify(message)
+    resp.status_code = 404
+
+    return resp
 
 
 if __name__ == "__main__":

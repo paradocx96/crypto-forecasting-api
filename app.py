@@ -116,13 +116,14 @@ def add_news():
     _title = _json['title']
     _description = _json['description']
     _author = _json['author']
-    _data = datetime.now()
+    _image = _json['image']
+    _date = datetime.now()
 
     # validate the received values
-    if _title and _description and _author and _data and request.method == 'POST':
+    if _title and _description and _author and _image and _date and request.method == 'POST':
         # save details
         response = mongo.db.news.insert_one(
-            {'title': _title, 'description': _description, 'author': _author, 'date': _data})
+            {'title': _title, 'description': _description, 'author': _author, 'image': _image, 'date': _date})
 
         resp = jsonify('News Create Successfully!')
         resp.status_code = 200
@@ -152,14 +153,15 @@ def update_news():
     _title = _json['title']
     _description = _json['description']
     _author = _json['author']
-    _data = datetime.now()
+    _image = _json['image']
+    _date = datetime.now()
 
     # validate the received values
-    if _title and _description and _author and _data and _id and request.method == 'PUT':
+    if _title and _description and _author and _image and _date and _id and request.method == 'PUT':
         # save edits
         news = mongo.db.news.update_one(
             {'_id': ObjectId(_id['$oid']) if '$oid' in _id else ObjectId(_id)},
-            {'$set': {'title': _title, 'description': _description, 'author': _author, 'date': _data}}
+            {'$set': {'title': _title, 'description': _description, 'author': _author, 'image': _image, 'date': _date}}
         )
 
         resp = jsonify('News Update Successfully!')

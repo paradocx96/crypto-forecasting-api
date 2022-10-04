@@ -37,3 +37,5 @@ tzlocal==4.2
 Werkzeug==2.2.2
 zipp==3.8.1
 gunicorn
+Flask-PyMongo
+pymongo[srv]

@@ -5,6 +5,7 @@ import certifi
 from model_training.pp_market_cap import pp_market_cap
 from model_training.pp_price import pp_price
 from model_training.pp_volume import pp_volume
+from web_scrapping import start_web_scrapping, set_sentiment
 
 DATABASE_DIR = f"database{os.sep}"
 
@@ -183,3 +184,6 @@ def schedule_model_training():
     set_training(False)
 
     print(CURRENCIES)
+
+    set_sentiment('Not Available')
+    start_web_scrapping()

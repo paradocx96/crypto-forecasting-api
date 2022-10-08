@@ -5,7 +5,9 @@ from flask import Flask, jsonify, request
 from flask_apscheduler import APScheduler
 from flask_cors import CORS
 from flask_pymongo import PyMongo
+
 from model import schedule_model_training, is_training, CURRENCIES
+from web_scrapping import get_sentiment, get_sentiment_score
 
 app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
@@ -29,7 +31,6 @@ def index():
     return jsonify({'server': 'active', 'message': 'Crypto Currency Forecasting Sever is Active'})
 
 
-# Crypto Currency Endpoints
 @app.route("/crypto-currency/predict", methods=['GET'])
 def predict():
     if is_training():
@@ -52,6 +53,18 @@ def predict():
             "message": "Success",
             "data": data
         })
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response, 200
+
+
+@app.route("/crypto-currency/sentiment", methods=['GET'])
+def sentiment():
+    response = jsonify({
+        "code": 200,
+        "message": "Success",
+        "sentiment": get_sentiment(),
+        "score": get_sentiment_score()
+    })
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response, 200
 
@@ -257,9 +270,8 @@ def not_found(error=None):
     }
     resp = jsonify(message)
     resp.status_code = 404
-
     return resp
 
 
 if __name__ == "__main__":
-    app.run(port=5000)
+    app.run()

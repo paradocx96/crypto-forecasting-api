@@ -40,6 +40,10 @@
 
     http://127.0.0.1:5000/crypto-currency/predict
 
+##### Get Sentiment
+
+    http://127.0.0.1:5000/crypto-currency/sentiment
+
 ##### Get Prediction By Currency
 
     http://127.0.0.1:5000/crypto-currency/predict/<name>

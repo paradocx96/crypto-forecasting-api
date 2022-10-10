@@ -1,5 +1,5 @@
 #okteto.yml
-name: api
+name: cf-api
 autocreate: true
 image: okteto/python:3
 command: bash

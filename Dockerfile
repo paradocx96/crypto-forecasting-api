@@ -1,6 +1,6 @@
 FROM python:3.9
 
-WORKDIR /api
+WORKDIR /crypto-forecasting-api
 
 ENV FLASK_ENV=development
 

@@ -1,5 +1,5 @@
 services:
-  api:
+  crypto-forecasting-api:
     build:  ./
     ports:
       - "5000:5000"

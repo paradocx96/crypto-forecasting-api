@@ -1,9 +1,13 @@
 services:
-  crypto-forecasting-api:
+  api:
     build:  ./
-    ports:
-      - "5000:5000"
     volumes:
       - ./api:/api
     environment:
       FLASK_ENV: development
+    command: bash -c "flask run --host=0.0.0.0 -p 5000 --cors \"*\" --debug"
+    ports:
+      - "5000:5000"
+    public: true
+    networks:
+      - all

@@ -147,7 +147,7 @@ def schedule_model_training():
             # price
             CURRENCIES[currency]["price"]["today"] = today_price
             CURRENCIES[currency]["price"]["tomorrow"] = pred_price
-            score = ((pred_price - today_price) / today_price) * 10
+            score = ((pred_price - today_price) / today_price) * 100
             if score < 0:
                 score = 0
             CURRENCIES[currency]["price"]["score"] = score
@@ -159,7 +159,7 @@ def schedule_model_training():
             # volume
             CURRENCIES[currency]["volume"]["today"] = today_volume
             CURRENCIES[currency]["volume"]["tomorrow"] = pred_volume
-            score = ((pred_volume - today_volume) / today_volume) * 10
+            score = ((pred_volume - today_volume) / today_volume) * 100
             if score < 0:
                 score = 0
             CURRENCIES[currency]["volume"]["score"] = score
@@ -171,7 +171,7 @@ def schedule_model_training():
             # market cap
             CURRENCIES[currency]["market_cap"]["today"] = today_market_cap
             CURRENCIES[currency]["market_cap"]["tomorrow"] = pred_market_cap
-            score = ((pred_market_cap - today_market_cap) / today_market_cap) * 10
+            score = ((pred_market_cap - today_market_cap) / today_market_cap) * 100
             if score < 0:
                 score = 0
             CURRENCIES[currency]["market_cap"]["score"] = score

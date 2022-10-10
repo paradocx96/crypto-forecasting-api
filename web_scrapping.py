@@ -70,16 +70,19 @@ def start_web_scrapping():
                 if len(sentence.split()) >= 6:
                     pred = predict(sentence)
                     m[pred] += 1
+
+    score = m[1] / (m[1] + m[0]) * 100
+
     if m[1] > m[0]:
         set_sentiment('Positive')
-        set_sentiment_score(m[1])
+        set_sentiment_score(round(score, 2))
     else:
         set_sentiment('Negative')
-        set_sentiment_score(m[1])
+        set_sentiment_score(round(100 - score, 2))
 
 
 # only for testing
 '''
-    if __name__ == "__main__":
+if __name__ == "__main__":
     start_web_scrapping()
 '''

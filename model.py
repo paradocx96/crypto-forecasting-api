@@ -84,6 +84,126 @@ CURRENCIES = {
             "score": 0,
             "exceeded": False
         }
+    },
+    "SHIB_USD": {
+        "url": "https://www.coingecko.com/price_charts/export/11939/usd.csv",
+        "available_data": False,
+        "path": None,
+        "enable": True,
+        "price": {
+            "today": 0,
+            "tomorrow": 0,
+            "score": 0,
+            "exceeded": False
+        },
+        "volume": {
+            "today": 0,
+            "tomorrow": 0,
+            "score": 0,
+            "exceeded": False
+        },
+        "market_cap": {
+            "today": 0,
+            "tomorrow": 0,
+            "score": 0,
+            "exceeded": False
+        }
+    },
+    "DOGE_USD": {
+        "url": "https://www.coingecko.com/price_charts/export/5/usd.csv",
+        "available_data": False,
+        "path": None,
+        "enable": True,
+        "price": {
+            "today": 0,
+            "tomorrow": 0,
+            "score": 0,
+            "exceeded": False
+        },
+        "volume": {
+            "today": 0,
+            "tomorrow": 0,
+            "score": 0,
+            "exceeded": False
+        },
+        "market_cap": {
+            "today": 0,
+            "tomorrow": 0,
+            "score": 0,
+            "exceeded": False
+        }
+    },
+    "TRON_USD": {
+        "url": "https://www.coingecko.com/price_charts/export/1094/usd.csv",
+        "available_data": False,
+        "path": None,
+        "enable": True,
+        "price": {
+            "today": 0,
+            "tomorrow": 0,
+            "score": 0,
+            "exceeded": False
+        },
+        "volume": {
+            "today": 0,
+            "tomorrow": 0,
+            "score": 0,
+            "exceeded": False
+        },
+        "market_cap": {
+            "today": 0,
+            "tomorrow": 0,
+            "score": 0,
+            "exceeded": False
+        }
+    },
+    "BNB_USD": {
+        "url": "https://www.coingecko.com/price_charts/export/825/usd.csv",
+        "available_data": False,
+        "path": None,
+        "enable": True,
+        "price": {
+            "today": 0,
+            "tomorrow": 0,
+            "score": 0,
+            "exceeded": False
+        },
+        "volume": {
+            "today": 0,
+            "tomorrow": 0,
+            "score": 0,
+            "exceeded": False
+        },
+        "market_cap": {
+            "today": 0,
+            "tomorrow": 0,
+            "score": 0,
+            "exceeded": False
+        }
+    },
+    "SOL_USD": {
+        "url": "https://www.coingecko.com/price_charts/export/4128/usd.csv",
+        "available_data": False,
+        "path": None,
+        "enable": True,
+        "price": {
+            "today": 0,
+            "tomorrow": 0,
+            "score": 0,
+            "exceeded": False
+        },
+        "volume": {
+            "today": 0,
+            "tomorrow": 0,
+            "score": 0,
+            "exceeded": False
+        },
+        "market_cap": {
+            "today": 0,
+            "tomorrow": 0,
+            "score": 0,
+            "exceeded": False
+        }
     }
 }
 

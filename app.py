@@ -1,3 +1,4 @@
+import os
 from bson.json_util import dumps
 from bson.objectid import ObjectId
 from datetime import datetime
@@ -5,6 +6,8 @@ from flask import Flask, jsonify, request
 from flask_apscheduler import APScheduler
 from flask_cors import CORS
 from flask_pymongo import PyMongo
+from dotenv import load_dotenv
+from pymongo import MongoClient
 
 from model import schedule_model_training, is_training, CURRENCIES
 from web_scrapping import get_sentiment, get_sentiment_score
@@ -13,10 +16,17 @@ app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
 app.config['CORS_HEADERS'] = 'Content-Type'
 scheduler = APScheduler()
+load_dotenv()
 
 # Mongo Config
-app.config["MONGO_URI"] = 'mongodb+srv://ssd:root@ead.vuzt9we.mongodb.net/de_db?retryWrites=true&w=majority'
+mongodb_url_with_db = os.getenv('mongodb_url_with_db')
+mongodb_url_without_db = os.getenv('mongodb_url_without_db')
+
+app.config["MONGO_URI"] = mongodb_url_with_db
 mongo = PyMongo(app)
+
+myClient = MongoClient(mongodb_url_without_db)
+db = myClient["de_db"]
 
 schedule_model_training()
 '''
@@ -288,12 +298,36 @@ def delete_currency(id):
     return response, 200
 
 
+# Saved Coin Data Endpoints
+@app.route('/api/coin/<coin>')
+def get_save_coin(coin):
+    collection_name = "data_" + coin.lower()
+    collection = db[collection_name]
+
+    data = collection.find()
+    list_data = list(data)
+    response = dumps(list_data, indent=2)
+
+    return response, 200
+
+
+@app.route('/api/coin/<coin>/<id>')
+def get_save_coin_data_by_id(coin=None, id=None):
+    collection_name = "data_" + coin.lower()
+    collection = db[collection_name]
+
+    data = collection.find_one({'_id': ObjectId(id)})
+    response = dumps(data, indent=2)
+
+    return response, 200
+
+
 @app.errorhandler(404)
 def not_found(error=None):
     response = jsonify({
         "code": 404,
         "message": "Unsuccessful",
-        "data": 'Not Found: ' + request.url
+        "url": 'Not Found: ' + request.url
     })
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response, 404

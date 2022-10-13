@@ -268,7 +268,7 @@ def save_data():
                   'market_cap': _market_cap_data}
 
         response = collection.insert_one(record)
-        print(f"Data Saved in Database for {currency}")
+        print(f"{currency} data saved in database")
 
 
 def schedule_model_training():

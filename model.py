@@ -6,6 +6,12 @@ from model_training.pp_market_cap import pp_market_cap
 from model_training.pp_price import pp_price
 from model_training.pp_volume import pp_volume
 from web_scrapping import start_web_scrapping, set_sentiment
+from pymongo import MongoClient
+import time
+
+# Mongo Config
+myClient = MongoClient("mongodb+srv://ssd:root@ead.vuzt9we.mongodb.net/?retryWrites=true&w=majority")
+db = myClient["de_db"]
 
 DATABASE_DIR = f"database{os.sep}"
 
@@ -244,6 +250,27 @@ def is_training():
     return TRAINING
 
 
+def save_data():
+    for currency in list(CURRENCIES.keys()):
+        local_time = time.localtime()
+        time_format = time.strftime("%Y-%m-%d %H:%M:%S", local_time)
+
+        collection_name = "data_" + currency.lower()
+        _price_data = CURRENCIES[currency]["price"]
+        _volume_data = CURRENCIES[currency]["volume"]
+        _market_cap_data = CURRENCIES[currency]["market_cap"]
+
+        collection = db[collection_name]
+        record = {'date_time': time_format,
+                  'currency': currency,
+                  'price': _price_data,
+                  'volume': _volume_data,
+                  'market_cap': _market_cap_data}
+
+        response = collection.insert_one(record)
+        print(f"Data Saved in Database for {currency}")
+
+
 def schedule_model_training():
     set_training(True)
     print("start model training")
@@ -302,6 +329,7 @@ def schedule_model_training():
 
     print("end model training")
     set_training(False)
+    save_data()
 
     print(CURRENCIES)
 

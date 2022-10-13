@@ -135,12 +135,16 @@ def add_news():
     # validate the received values
     if _title and _description and _author and _image and _date and request.method == 'POST':
         # save details
-        response = mongo.db.news.insert_one(
+        res = mongo.db.news.insert_one(
             {'title': _title, 'description': _description, 'author': _author, 'image': _image, 'date': _date})
 
-        resp = jsonify('News Create Successfully!')
-        resp.status_code = 200
-        return resp
+        response = jsonify({
+            "code": 200,
+            "message": "Success",
+            "data": 'News Create Successfully!'
+        })
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        return response, 200
     else:
         return not_found()
 
@@ -172,24 +176,33 @@ def update_news():
     # validate the received values
     if _title and _description and _author and _image and _date and _id and request.method == 'PUT':
         # save edits
-        news = mongo.db.news.update_one(
+        res = mongo.db.news.update_one(
             {'_id': ObjectId(_id['$oid']) if '$oid' in _id else ObjectId(_id)},
             {'$set': {'title': _title, 'description': _description, 'author': _author, 'image': _image, 'date': _date}}
         )
 
-        resp = jsonify('News Update Successfully!')
-        resp.status_code = 200
-        return resp
+        response = jsonify({
+            "code": 200,
+            "message": "Success",
+            "data": 'News Update Successfully!'
+        })
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        return response, 200
     else:
         return not_found()
 
 
 @app.route('/news/delete/<id>', methods=['DELETE'])
 def delete_news(id):
-    mongo.db.news.delete_one({'_id': ObjectId(id)})
-    resp = jsonify('News Deleted successfully!')
-    resp.status_code = 200
-    return resp
+    res = mongo.db.news.delete_one({'_id': ObjectId(id)})
+
+    response = jsonify({
+        "code": 200,
+        "message": "Success",
+        "data": 'News Deleted successfully!'
+    })
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response, 200
 
 
 # Currency Data Endpoints
@@ -205,12 +218,16 @@ def add_currency():
     # validate the received values
     if _name and _code and _description and _image and _date and request.method == 'POST':
         # save details
-        response = mongo.db.currency.insert_one(
+        res = mongo.db.currency.insert_one(
             {'name': _name, 'code': _code, 'description': _description, 'image': _image, 'date': _date})
 
-        resp = jsonify('Currency Create Successfully!')
-        resp.status_code = 200
-        return resp
+        response = jsonify({
+            "code": 200,
+            "message": "Success",
+            "data": 'Currency Create Successfully!'
+        })
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        return response, 200
     else:
         return not_found()
 
@@ -242,35 +259,44 @@ def update_currency():
     # validate the received values
     if _name and _code and _description and _image and _date and request.method == 'PUT':
         # save edits
-        currency = mongo.db.currency.update_one(
+        res = mongo.db.currency.update_one(
             {'_id': ObjectId(_id['$oid']) if '$oid' in _id else ObjectId(_id)},
             {'$set': {'name': _name, 'code': _code, 'description': _description, 'image': _image, 'date': _date}}
         )
 
-        resp = jsonify('Currency Update Successfully!')
-        resp.status_code = 200
-        return resp
+        response = jsonify({
+            "code": 200,
+            "message": "Success",
+            "data": 'Currency Update Successfully!'
+        })
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        return response, 200
     else:
         return not_found()
 
 
 @app.route('/currency/delete/<id>', methods=['DELETE'])
 def delete_currency(id):
-    mongo.db.currency.delete_one({'_id': ObjectId(id)})
-    resp = jsonify('Currency Deleted successfully!')
-    resp.status_code = 200
-    return resp
+    res = mongo.db.currency.delete_one({'_id': ObjectId(id)})
+
+    response = jsonify({
+        "code": 200,
+        "message": "Success",
+        "data": 'Currency Deleted successfully!'
+    })
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response, 200
 
 
 @app.errorhandler(404)
 def not_found(error=None):
-    message = {
-        'status': 404,
-        'message': 'Not Found: ' + request.url,
-    }
-    resp = jsonify(message)
-    resp.status_code = 404
-    return resp
+    response = jsonify({
+        "code": 404,
+        "message": "Unsuccessful",
+        "data": 'Not Found: ' + request.url
+    })
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response, 404
 
 
 if __name__ == "__main__":

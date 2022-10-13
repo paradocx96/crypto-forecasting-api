@@ -1,0 +1,21 @@
+name: Flask REST API CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+    
+    - name: Install Python Dependencies
+      run: pip install -r requirements.txt
+

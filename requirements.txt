@@ -42,3 +42,4 @@ zipp==3.8.1
 gunicorn
 Flask-PyMongo
 pymongo[srv]
+python-dotenv

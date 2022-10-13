@@ -19,8 +19,12 @@ scheduler = APScheduler()
 load_dotenv()
 
 # Mongo Config
-mongodb_url_with_db = os.getenv('mongodb_url_with_db')
-mongodb_url_without_db = os.getenv('mongodb_url_without_db')
+try:
+    mongodb_url_with_db = os.getenv('mongodb_url_with_db')
+    mongodb_url_without_db = os.getenv('mongodb_url_without_db')
+except BaseException:
+    mongodb_url_with_db = os.environ['mongodb_url_with_db']
+    mongodb_url_without_db = os.environ['mongodb_url_without_db']
 
 app.config["MONGO_URI"] = mongodb_url_with_db
 mongo = PyMongo(app)

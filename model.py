@@ -7,10 +7,20 @@ from model_training.pp_price import pp_price
 from model_training.pp_volume import pp_volume
 from web_scrapping import start_web_scrapping, set_sentiment
 from pymongo import MongoClient
+from dotenv import load_dotenv
+import requests
+import csv
 import time
 
+load_dotenv()
+
+try:
+    mongodb_url_without_db = os.getenv('mongodb_url_without_db')
+except BaseException:
+    mongodb_url_without_db = os.environ['mongodb_url_without_db']
+
 # Mongo Config
-myClient = MongoClient("mongodb+srv://ssd:root@ead.vuzt9we.mongodb.net/?retryWrites=true&w=majority")
+myClient = MongoClient(mongodb_url_without_db)
 db = myClient["de_db"]
 
 DATABASE_DIR = f"database{os.sep}"
@@ -21,6 +31,7 @@ THRESHOLD = 1000000
 CURRENCIES = {
     "BTC_USD": {
         "url": "https://coingecko.com/price_charts/export/1/usd.csv",
+        "url_two": "https://api.coinmarketcap.com/data-api/v3/cryptocurrency/historical?id=1&convertId=2781&timeStart=1657001454&timeEnd=1665641454",
         "available_data": False,
         "path": None,
         "enable": True,
@@ -45,6 +56,7 @@ CURRENCIES = {
     },
     "ETH_USD": {
         "url": "https://www.coingecko.com/price_charts/export/279/usd.csv",
+        "url_two": "https://api.coinmarketcap.com/data-api/v3/cryptocurrency/historical?id=1&convertId=2781&timeStart=1657001454&timeEnd=1665641454",
         "available_data": False,
         "path": None,
         "enable": True,
@@ -69,6 +81,7 @@ CURRENCIES = {
     },
     "PKEX_USD": {
         "url": "https://www.coingecko.com/price_charts/export/18616/usd.csv",
+        "url_two": "https://api.coinmarketcap.com/data-api/v3/cryptocurrency/historical?id=1&convertId=2781&timeStart=1657001454&timeEnd=1665641454",
         "available_data": False,
         "path": None,
         "enable": True,
@@ -93,6 +106,7 @@ CURRENCIES = {
     },
     "SHIB_USD": {
         "url": "https://www.coingecko.com/price_charts/export/11939/usd.csv",
+        "url_two": "https://api.coinmarketcap.com/data-api/v3/cryptocurrency/historical?id=1&convertId=2781&timeStart=1657001454&timeEnd=1665641454",
         "available_data": False,
         "path": None,
         "enable": True,
@@ -117,6 +131,7 @@ CURRENCIES = {
     },
     "DOGE_USD": {
         "url": "https://www.coingecko.com/price_charts/export/5/usd.csv",
+        "url_two": "https://api.coinmarketcap.com/data-api/v3/cryptocurrency/historical?id=1&convertId=2781&timeStart=1657001454&timeEnd=1665641454",
         "available_data": False,
         "path": None,
         "enable": True,
@@ -141,6 +156,7 @@ CURRENCIES = {
     },
     "TRON_USD": {
         "url": "https://www.coingecko.com/price_charts/export/1094/usd.csv",
+        "url_two": "https://api.coinmarketcap.com/data-api/v3/cryptocurrency/historical?id=1&convertId=2781&timeStart=1657001454&timeEnd=1665641454",
         "available_data": False,
         "path": None,
         "enable": True,
@@ -165,6 +181,7 @@ CURRENCIES = {
     },
     "BNB_USD": {
         "url": "https://www.coingecko.com/price_charts/export/825/usd.csv",
+        "url_two": "https://api.coinmarketcap.com/data-api/v3/cryptocurrency/historical?id=1&convertId=2781&timeStart=1657001454&timeEnd=1665641454",
         "available_data": False,
         "path": None,
         "enable": True,
@@ -189,6 +206,7 @@ CURRENCIES = {
     },
     "SOL_USD": {
         "url": "https://www.coingecko.com/price_charts/export/4128/usd.csv",
+        "url_two": "https://api.coinmarketcap.com/data-api/v3/cryptocurrency/historical?id=1&convertId=2781&timeStart=1657001454&timeEnd=1665641454",
         "available_data": False,
         "path": None,
         "enable": True,
@@ -250,6 +268,45 @@ def is_training():
     return TRAINING
 
 
+def secondary_download_data_sources():
+    for currency in list(CURRENCIES.keys()):
+        CURRENCIES[currency]["available_data"] = False
+        CURRENCIES[currency]["path"] = None
+
+    for currency in list(CURRENCIES.keys()):
+        # condition_one = CURRENCIES[currency]["available_data"]
+        # condition_two = CURRENCIES[currency]["path"]
+        # if condition_one is False & condition_two is None:
+
+        headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+
+        response = requests.request(
+            "GET",
+            url=CURRENCIES[currency]["url_two"],
+            headers=headers,
+            data={}
+        )
+
+        data_json = response.json()
+        capture_data = []
+        table_headers = ['snapped_at', 'price', 'market_cap', 'total_volume']
+
+        for x in data_json['data']['quotes']:
+            listing = [x['timeOpen'], x['quote']['open'], x['quote']['marketCap'], x['quote']['volume']]
+            capture_data.append(listing)
+
+        with open(f'{DATABASE_DIR}{currency}.csv', 'w', encoding='UTF8', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow(table_headers)
+            writer.writerows(capture_data)
+            CURRENCIES[currency]["available_data"] = True
+            CURRENCIES[currency]["path"] = f'{DATABASE_DIR}{currency}.csv'
+            print(f"Successfully downloaded secondary data source for {currency}")
+
+
 def save_data():
     for currency in list(CURRENCIES.keys()):
         local_time = time.localtime()
@@ -283,6 +340,17 @@ def schedule_model_training():
         if is_data_sources_configured():
             print("data sources successfully downloaded")
             break
+
+    retry_count_second = 0
+    if retry_count == 3:
+        while retry_count_second < 3:
+            print("downloading secondary data sources")
+            retry_count_second += 1
+            print(f"secondary attempting - {retry_count_second}")
+            secondary_download_data_sources()
+            if is_data_sources_configured():
+                print("data sources successfully downloaded")
+                break
 
     # model training
     for currency in list(CURRENCIES.keys()):

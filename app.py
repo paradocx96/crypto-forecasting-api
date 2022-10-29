@@ -137,7 +137,73 @@ def predict_currency_action(name=None, value=None):
     return response, 200
 
 
-# Auth Endpoints
+'''
+Auth Endpoints
+
+@auth_signin()
+/auth/signin - User SignIn
+
+@auth_signup()
+/auth/signup - User SignUp
+'''
+
+
+# User SignIn method
+@app.route('/auth/signin', methods=['POST'])
+def auth_signin():
+    _json = request.json
+    _username = _json['username']
+    _password = _json['password']
+
+    # validate the received values
+    if _username and _password and request.method == 'POST':
+        check_user = mongo.db.user.find_one({"username": _username})
+
+        if check_user is None:
+            response = jsonify({
+                "code": 200,
+                "message": "Unsuccessful",
+                "data": 'Username Incorrect!'
+            })
+            response.headers.add('Access-Control-Allow-Origin', '*')
+            return response, 200
+        else:
+            if check_user['password'] != _password:
+                response = jsonify({
+                    "code": 200,
+                    "message": "Unsuccessful",
+                    "data": 'Password Incorrect!'
+                })
+                response.headers.add('Access-Control-Allow-Origin', '*')
+                return response, 200
+            elif check_user['password'] == _password:
+                res = {
+                    "full_name": check_user['full_name'],
+                    "username": check_user['username'],
+                    "email": check_user['email'],
+                    "role": check_user['role'],
+                    "image": check_user['image'],
+                    'created': check_user['created'],
+                    'updated': check_user['updated']
+                }
+                response = jsonify({
+                    "code": 200,
+                    "message": "Success",
+                    "data": res
+                })
+                response.headers.add('Access-Control-Allow-Origin', '*')
+                return response, 200
+            else:
+                response = jsonify({
+                    "code": 204,
+                    "message": "Unsuccessful",
+                    "data": 'Something Wrong!'
+                })
+                response.headers.add('Access-Control-Allow-Origin', '*')
+                return response, 204
+
+
+# User SignUp method
 @app.route('/auth/signup', methods=['POST'])
 def auth_signup():
     _json = request.json

@@ -268,21 +268,26 @@ def is_training():
     return TRAINING
 
 
+# Secondary Data Source Downloading
 def secondary_download_data_sources():
+    # Check CURRENCIES data source
     for currency in list(CURRENCIES.keys()):
         CURRENCIES[currency]["available_data"] = False
         CURRENCIES[currency]["path"] = None
 
+    # Attempt by Currency
     for currency in list(CURRENCIES.keys()):
         # condition_one = CURRENCIES[currency]["available_data"]
         # condition_two = CURRENCIES[currency]["path"]
         # if condition_one is False & condition_two is None:
 
+        # Header for request
         headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         }
 
+        # Config for Request
         response = requests.request(
             "GET",
             url=CURRENCIES[currency]["url_two"],
@@ -290,14 +295,17 @@ def secondary_download_data_sources():
             data={}
         )
 
+        # Get response data from JSON
         data_json = response.json()
         capture_data = []
         table_headers = ['snapped_at', 'price', 'market_cap', 'total_volume']
 
+        # Put data into Array
         for x in data_json['data']['quotes']:
             listing = [x['timeOpen'], x['quote']['open'], x['quote']['marketCap'], x['quote']['volume']]
             capture_data.append(listing)
 
+        # Write new data in CSV files
         with open(f'{DATABASE_DIR}{currency}.csv', 'w', encoding='UTF8', newline='') as f:
             writer = csv.writer(f)
             writer.writerow(table_headers)
@@ -307,23 +315,31 @@ def secondary_download_data_sources():
             print(f"Successfully downloaded secondary data source for {currency}")
 
 
+# Save Trained Data in Database
 def save_data():
+    # Save data by Currency
     for currency in list(CURRENCIES.keys()):
+        # Getting local date time
         local_time = time.localtime()
         time_format = time.strftime("%Y-%m-%d %H:%M:%S", local_time)
 
+        # Define collection name for currency
         collection_name = "data_" + currency.lower()
+        collection = db[collection_name]
+
+        # Define Colum data from CURRENCIES
         _price_data = CURRENCIES[currency]["price"]
         _volume_data = CURRENCIES[currency]["volume"]
         _market_cap_data = CURRENCIES[currency]["market_cap"]
 
-        collection = db[collection_name]
+        # Create document data
         record = {'date_time': time_format,
                   'currency': currency,
                   'price': _price_data,
                   'volume': _volume_data,
                   'market_cap': _market_cap_data}
 
+        # Create Currency data in database
         response = collection.insert_one(record)
         print(f"{currency} data saved in database")
 
@@ -341,12 +357,15 @@ def schedule_model_training():
             print("data sources successfully downloaded")
             break
 
+    # Attempt Second Round Downloading Data Source if 1st source failed
     retry_count_second = 0
     if retry_count == 3:
         while retry_count_second < 3:
             print("downloading secondary data sources")
             retry_count_second += 1
             print(f"secondary attempting - {retry_count_second}")
+
+            # Calling Secondary Download Method
             secondary_download_data_sources()
             if is_data_sources_configured():
                 print("data sources successfully downloaded")

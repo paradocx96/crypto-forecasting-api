@@ -267,6 +267,9 @@ User Management Endpoints
 
 @get_user_by_id(id)
 /user/<id> [GET] - Get user by Id
+
+@delete_user(id)
+/user/<id> [DELETE] - Delete user by Id
 '''
 
 
@@ -320,6 +323,44 @@ def get_user_by_id(id):
         })
         response.headers.add('Access-Control-Allow-Origin', '*')
         return response, 200
+
+
+# User - Delete by Id method
+@app.route('/user/<id>', methods=['DELETE'])
+def delete_user(id):
+    # validate the received values
+    if id and request.method == 'DELETE':
+        try:
+            user = mongo.db.user.find_one({'_id': ObjectId(id)})
+
+            if user is None:
+                response = jsonify({
+                    "code": 200,
+                    "message": "Unsuccessful",
+                    "data": 'User Does Not Exists!'
+                })
+                response.headers.add('Access-Control-Allow-Origin', '*')
+                return response, 200
+            else:
+                res = mongo.db.user.delete_one({'_id': ObjectId(id)})
+
+                response = jsonify({
+                    "code": 202,
+                    "message": "Success",
+                    "data": 'User Delete Successfully!'
+                })
+                response.headers.add('Access-Control-Allow-Origin', '*')
+                return response, 202
+        except:
+            response = jsonify({
+                "code": 200,
+                "message": "Unsuccessful",
+                "data": 'User Does Not Exists!'
+            })
+            response.headers.add('Access-Control-Allow-Origin', '*')
+            return response, 200
+    else:
+        return not_found()
 
 
 # News Endpoints

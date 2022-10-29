@@ -263,7 +263,10 @@ def auth_signup():
 User Management Endpoints
 
 @get_all_users()
-/user [GET] - Get All users
+/user [GET] - Get all users
+
+@get_user_by_id(id)
+/user/<id> [GET] - Get user by Id
 '''
 
 
@@ -273,6 +276,50 @@ def get_all_users():
     user = mongo.db.user.find()
     resp = dumps(user, indent=2)
     return resp
+
+
+# User - Get By Id method
+@app.route('/user/<id>')
+def get_user_by_id(id):
+    try:
+        user = mongo.db.user.find_one({'_id': ObjectId(id)})
+
+        if user is None:
+            response = jsonify({
+                "code": 200,
+                "message": "Unsuccessful",
+                "data": 'User Does Not Exists!'
+            })
+            response.headers.add('Access-Control-Allow-Origin', '*')
+            return response, 200
+        else:
+            data = {
+                "_id": id,
+                "full_name": user['full_name'],
+                "username": user['username'],
+                "email": user['email'],
+                "role": user['role'],
+                "image": user['image'],
+                'created': user['created'],
+                'updated': user['updated']
+            }
+
+            response = jsonify({
+                "code": 200,
+                "message": "Success",
+                "data": data
+            })
+
+            response.headers.add('Access-Control-Allow-Origin', '*')
+            return response, 200
+    except:
+        response = jsonify({
+            "code": 200,
+            "message": "Unsuccessful",
+            "data": 'User Does Not Exists!'
+        })
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        return response, 200
 
 
 # News Endpoints

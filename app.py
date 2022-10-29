@@ -275,7 +275,10 @@ User Management Endpoints
 /user [PUT] - Update user
 
 @update_password()
-/user/reset/password [PUT] - Update password
+/user/change/password [PUT] - Update password
+
+@update_username()
+/user/change/username [PUT] - Update username
 '''
 
 
@@ -427,8 +430,8 @@ def update_user():
         return not_found()
 
 
-# User - Update Password
-@app.route('/user/reset/password', methods=['PUT'])
+# User - Update Password method
+@app.route('/user/change/password', methods=['PUT'])
 def update_password():
     _json = request.json
     _id = _json['_id']
@@ -467,6 +470,69 @@ def update_password():
                 })
                 response.headers.add('Access-Control-Allow-Origin', '*')
                 return response, 201
+        except:
+            response = jsonify({
+                "code": 200,
+                "message": "Unsuccessful",
+                "data": 'User Does Not Exists!'
+            })
+            response.headers.add('Access-Control-Allow-Origin', '*')
+            return response, 200
+    else:
+        return not_found()
+
+
+# User - Update Username method
+@app.route('/user/change/username', methods=['PUT'])
+def update_username():
+    _json = request.json
+    _id = _json['_id']
+    _username = _json['username']
+
+    date_time_username = datetime.now()
+    _updated_username_time = date_time_username.strftime("%Y-%m-%d %H:%M:%S")
+
+    # validate the received values
+    if _id and _username and request.method == 'PUT':
+        try:
+            user = mongo.db.user.find_one({'_id': ObjectId(_id)})
+
+            if user is None:
+                response = jsonify({
+                    "code": 200,
+                    "message": "Unsuccessful",
+                    "data": 'User Does Not Exists!'
+                })
+                response.headers.add('Access-Control-Allow-Origin', '*')
+                return response, 200
+            else:
+                check_username = mongo.db.user.find_one({"username": _username})
+
+                if check_username is not None:
+                    response = jsonify({
+                        "code": 200,
+                        "message": "Unsuccessful",
+                        "data": 'Username Already Exists!'
+                    })
+                    response.headers.add('Access-Control-Allow-Origin', '*')
+                    return response, 200
+                else:
+                    # save new password
+                    res = mongo.db.user.update_one(
+                        {'_id': ObjectId(_id['$oid']) if '$oid' in _id else ObjectId(_id)},
+                        {'$set': {
+                            'username': _username,
+                            'updated': _updated_username_time
+                        }}
+                    )
+
+                    response = jsonify({
+                        "code": 201,
+                        "message": "Success",
+                        "data": 'Username Update Successfully!'
+                    })
+                    response.headers.add('Access-Control-Allow-Origin', '*')
+                    return response, 201
         except:
             response = jsonify({
                 "code": 200,

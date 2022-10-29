@@ -201,6 +201,8 @@ def auth_signin():
                 })
                 response.headers.add('Access-Control-Allow-Origin', '*')
                 return response, 204
+    else:
+        return not_found()
 
 
 # User SignUp method

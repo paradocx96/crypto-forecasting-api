@@ -273,6 +273,9 @@ User Management Endpoints
 
 @update_user()
 /user [PUT] - Update user
+
+@update_password()
+/user/reset/password [PUT] - Update password
 '''
 
 
@@ -409,6 +412,58 @@ def update_user():
                     "code": 201,
                     "message": "Success",
                     "data": 'User Update Successfully!'
+                })
+                response.headers.add('Access-Control-Allow-Origin', '*')
+                return response, 201
+        except:
+            response = jsonify({
+                "code": 200,
+                "message": "Unsuccessful",
+                "data": 'User Does Not Exists!'
+            })
+            response.headers.add('Access-Control-Allow-Origin', '*')
+            return response, 200
+    else:
+        return not_found()
+
+
+# User - Update Password
+@app.route('/user/reset/password', methods=['PUT'])
+def update_password():
+    _json = request.json
+    _id = _json['_id']
+    _password = _json['password']
+
+    date_time_password = datetime.now()
+    _updated_password_time = date_time_password.strftime("%Y-%m-%d %H:%M:%S")
+
+    # validate the received values
+    if _id and _password and request.method == 'PUT':
+        try:
+            user = mongo.db.user.find_one({'_id': ObjectId(_id)})
+
+            if user is None:
+                response = jsonify({
+                    "code": 200,
+                    "message": "Unsuccessful",
+                    "data": 'User Does Not Exists!'
+                })
+                response.headers.add('Access-Control-Allow-Origin', '*')
+                return response, 200
+            else:
+                # save new password
+                res = mongo.db.user.update_one(
+                    {'_id': ObjectId(_id['$oid']) if '$oid' in _id else ObjectId(_id)},
+                    {'$set': {
+                        'password': _password,
+                        'updated': _updated_password_time
+                    }}
+                )
+
+                response = jsonify({
+                    "code": 201,
+                    "message": "Success",
+                    "data": 'Password Update Successfully!'
                 })
                 response.headers.add('Access-Control-Allow-Origin', '*')
                 return response, 201

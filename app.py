@@ -8,6 +8,7 @@ from flask_cors import CORS
 from flask_pymongo import PyMongo
 from dotenv import load_dotenv
 from pymongo import MongoClient
+import pprint
 
 from model import schedule_model_training, is_training, CURRENCIES
 from web_scrapping import get_sentiment, get_sentiment_score
@@ -134,6 +135,62 @@ def predict_currency_action(name=None, value=None):
         })
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response, 200
+
+
+# Auth Endpoints
+@app.route('/auth/signup', methods=['POST'])
+def auth_signup():
+    _json = request.json
+    _fullName = _json['full_name']
+    _username = _json['username']
+    _email = _json['email']
+    _password = _json['password']
+    _role = _json['role']
+    _image = _json['image']
+
+    current_date_time = datetime.now()
+    _created = current_date_time.strftime("%Y-%m-%d %H:%M:%S")
+
+    # validate the received values
+    if _fullName and _username and _email and _password and _role and request.method == 'POST':
+        check_username = mongo.db.user.find_one({"username": _username})
+        check_email = mongo.db.user.find_one({"email": _email})
+
+        if check_username is not None:
+            response = jsonify({
+                "code": 200,
+                "message": "Unsuccessful",
+                "data": 'Username Already Exists!'
+            })
+            response.headers.add('Access-Control-Allow-Origin', '*')
+            return response, 200
+        elif check_email is not None:
+            response = jsonify({
+                "code": 200,
+                "message": "Unsuccessful",
+                "data": 'Email Already Exists!'
+            })
+            response.headers.add('Access-Control-Allow-Origin', '*')
+            return response, 200
+        else:
+            res = mongo.db.user.insert_one({
+                'full_name': _fullName,
+                'username': _username,
+                'email': _email,
+                'password': _password,
+                'role': _role,
+                'image': _image,
+                'created': _created,
+                'updated': "default"
+            })
+
+            response = jsonify({
+                "code": 201,
+                "message": "Success",
+                "data": 'User Registration Successfully!'
+            })
+            response.headers.add('Access-Control-Allow-Origin', '*')
+            return response, 201
 
 
 # News Endpoints

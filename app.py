@@ -259,6 +259,22 @@ def auth_signup():
             return response, 201
 
 
+'''
+User Management Endpoints
+
+@get_all_users()
+/user [GET] - Get All users
+'''
+
+
+# User - Get All method
+@app.route('/user')
+def get_all_users():
+    user = mongo.db.user.find()
+    resp = dumps(user, indent=2)
+    return resp
+
+
 # News Endpoints
 @app.route('/news/add', methods=['POST'])
 def add_news():

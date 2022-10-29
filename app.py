@@ -270,6 +270,9 @@ User Management Endpoints
 
 @delete_user(id)
 /user/<id> [DELETE] - Delete user by Id
+
+@update_user()
+/user [PUT] - Update user
 '''
 
 
@@ -351,6 +354,64 @@ def delete_user(id):
                 })
                 response.headers.add('Access-Control-Allow-Origin', '*')
                 return response, 202
+        except:
+            response = jsonify({
+                "code": 200,
+                "message": "Unsuccessful",
+                "data": 'User Does Not Exists!'
+            })
+            response.headers.add('Access-Control-Allow-Origin', '*')
+            return response, 200
+    else:
+        return not_found()
+
+
+# User - Update method
+@app.route('/user', methods=['PUT'])
+def update_user():
+    _json = request.json
+    _id = _json['_id']
+    _fullName = _json['full_name']
+    _email = _json['email']
+    _role = _json['role']
+    _image = _json['image']
+
+    current_date_time = datetime.now()
+    _updated = current_date_time.strftime("%Y-%m-%d %H:%M:%S")
+
+    # validate the received values
+    if _id and _fullName and _email and _role and request.method == 'PUT':
+        try:
+            user = mongo.db.user.find_one({'_id': ObjectId(_id)})
+
+            if user is None:
+                response = jsonify({
+                    "code": 200,
+                    "message": "Unsuccessful",
+                    "data": 'User Does Not Exists!'
+                })
+                response.headers.add('Access-Control-Allow-Origin', '*')
+                return response, 200
+            else:
+                # save updates
+                res = mongo.db.user.update_one(
+                    {'_id': ObjectId(_id['$oid']) if '$oid' in _id else ObjectId(_id)},
+                    {'$set': {
+                        'full_name': _fullName,
+                        'email': _email,
+                        'role': _role,
+                        'image': _image,
+                        'updated': _updated
+                    }}
+                )
+
+                response = jsonify({
+                    "code": 201,
+                    "message": "Success",
+                    "data": 'User Update Successfully!'
+                })
+                response.headers.add('Access-Control-Allow-Origin', '*')
+                return response, 201
         except:
             response = jsonify({
                 "code": 200,

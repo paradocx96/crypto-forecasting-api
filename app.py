@@ -257,6 +257,8 @@ def auth_signup():
             })
             response.headers.add('Access-Control-Allow-Origin', '*')
             return response, 201
+    else:
+        return not_found()
 
 
 '''

@@ -2,12 +2,13 @@ import os
 from bson.json_util import dumps
 from bson.objectid import ObjectId
 from datetime import datetime
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_file
 from flask_apscheduler import APScheduler
 from flask_cors import CORS
 from flask_pymongo import PyMongo
 from dotenv import load_dotenv
 from pymongo import MongoClient
+import csv
 
 from model import schedule_model_training, is_training, CURRENCIES
 from web_scrapping import get_sentiment, get_sentiment_score
@@ -34,6 +35,9 @@ mongo = PyMongo(app)
 
 myClient = MongoClient(mongodb_url_without_db)
 db = myClient["de_db"]
+
+# Coin File Path
+COIN_DIR = f"coin{os.sep}"
 
 # Schedule model Training
 schedule_model_training()
@@ -895,6 +899,9 @@ Saved Trained Coin Data - Endpoints
 
 @get_save_coin_data_by_id(coin, cid)
 /api/coin/<coin>/<id> [GET] - Get Saved Coin data by Coin Name and item id
+
+@get_coin_csv(coin)
+/api/csv/<coin> [GET] - Get Saved Coin data as CSV file by Coin Name 
 '''
 
 
@@ -927,6 +934,59 @@ def get_save_coin_data_by_id(coin=None, cid=None):
     # Convert data to JSON data and send response
     response = dumps(data, indent=2)
     return response, 200
+
+
+# Coin Data - Get Coin data as CSV file by coin name
+@app.route('/api/csv/<coin>')
+def get_coin_csv(coin):
+    # Get Collection Data from database
+    collection_name = "data_" + coin.lower()
+    collection = db[collection_name]
+
+    # Get all coin data by coin name
+    data = collection.find()
+    list_data = list(data)
+
+    # Getting current data time
+    # file_date_time = datetime.now()
+    # _updated_file_date_time = file_date_time.strftime("%Y_%m_%d_%H_%M_%S")
+
+    # File name and Path
+    # file_name = f'{coin.lower()}_{_updated_file_date_time}.csv'
+    file_name_path = f'{COIN_DIR}{coin.lower()}.csv'
+
+    # Get response data from JSON
+    capture_data = []
+    table_headers = ['date_time', 'currency',
+                     'Today Price', 'Forecasted Tomorrow Price', 'Price Score',
+                     'Today Volume', 'Forecasted Tomorrow Volume', 'Volume Score',
+                     'Today Market Cap', 'Forecasted Tomorrow Market Cap', 'Market Cap Score']
+
+    # Put data into Array
+    for x in list_data:
+        price_score = round(x['price']['score'], 2)
+        volume_score = round(x['volume']['score'], 2)
+        market_cap_score = round(x['market_cap']['score'], 2)
+
+        listing = [x['date_time'], x['currency'],
+                   x['price']['today'], x['price']['tomorrow'], str(price_score) + '%',
+                   x['volume']['today'], x['volume']['tomorrow'], str(volume_score) + '%',
+                   x['market_cap']['today'], x['market_cap']['tomorrow'], str(market_cap_score) + '%']
+        capture_data.append(listing)
+
+    # Write new data in CSV files
+    with open(file_name_path, 'w', encoding='UTF8', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(table_headers)
+        writer.writerows(capture_data)
+
+    # Send File response
+    return send_file(
+        file_name_path,
+        mimetype='text/csv',
+        download_name='coin.csv',
+        as_attachment=True
+    )
 
 
 # Endpoint Error Response

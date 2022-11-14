@@ -960,7 +960,8 @@ def get_coin_csv(coin):
     table_headers = ['date_time', 'currency',
                      'Today Price', 'Forecasted Tomorrow Price', 'Price Score',
                      'Today Volume', 'Forecasted Tomorrow Volume', 'Volume Score',
-                     'Today Market Cap', 'Forecasted Tomorrow Market Cap', 'Market Cap Score']
+                     'Today Market Cap', 'Forecasted Tomorrow Market Cap', 'Market Cap Score',
+                     'Sentiment', 'Sentiment Score']
 
     # Put data into Array
     for x in list_data:
@@ -968,10 +969,18 @@ def get_coin_csv(coin):
         volume_score = round(x['volume']['score'], 2)
         market_cap_score = round(x['market_cap']['score'], 2)
 
+        try:
+            sentiment_data = x['sentiment']
+            sentiment_data_score = x['sentiment_score']
+        except:
+            sentiment_data = None
+            sentiment_data_score = None
+
         listing = [x['date_time'], x['currency'],
                    x['price']['today'], x['price']['tomorrow'], str(price_score) + '%',
                    x['volume']['today'], x['volume']['tomorrow'], str(volume_score) + '%',
-                   x['market_cap']['today'], x['market_cap']['tomorrow'], str(market_cap_score) + '%']
+                   x['market_cap']['today'], x['market_cap']['tomorrow'], str(market_cap_score) + '%',
+                   sentiment_data, sentiment_data_score]
         capture_data.append(listing)
 
     # Write new data in CSV files

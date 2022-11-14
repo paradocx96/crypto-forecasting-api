@@ -5,7 +5,7 @@ import certifi
 from model_training.pp_market_cap import pp_market_cap
 from model_training.pp_price import pp_price
 from model_training.pp_volume import pp_volume
-from web_scrapping import start_web_scrapping, set_sentiment
+from web_scrapping import start_web_scrapping, set_sentiment, get_sentiment_score, get_sentiment
 from pymongo import MongoClient
 from dotenv import load_dotenv
 import requests
@@ -337,7 +337,10 @@ def save_data():
                   'currency': currency,
                   'price': _price_data,
                   'volume': _volume_data,
-                  'market_cap': _market_cap_data}
+                  'market_cap': _market_cap_data,
+                  'sentiment': get_sentiment(),
+                  'sentiment_score': get_sentiment_score()
+                  }
 
         # Create Currency data in database
         response = collection.insert_one(record)
@@ -384,6 +387,8 @@ def schedule_model_training():
             score = ((pred_price - today_price) / today_price) * 100
             if score < 0:
                 score = 0
+            if score >= 100:
+                score = 99
             CURRENCIES[currency]["price"]["score"] = score
             flag = False
             if pred_price >= THRESHOLD:
@@ -396,6 +401,8 @@ def schedule_model_training():
             score = ((pred_volume - today_volume) / today_volume) * 100
             if score < 0:
                 score = 0
+            if score >= 100:
+                score = 99
             CURRENCIES[currency]["volume"]["score"] = score
             flag = False
             if pred_volume >= THRESHOLD:
@@ -408,6 +415,8 @@ def schedule_model_training():
             score = ((pred_market_cap - today_market_cap) / today_market_cap) * 100
             if score < 0:
                 score = 0
+            if score >= 100:
+                score = 99
             CURRENCIES[currency]["market_cap"]["score"] = score
             flag = False
             if pred_market_cap >= THRESHOLD:
@@ -416,9 +425,12 @@ def schedule_model_training():
 
     print("end model training")
     set_training(False)
-    save_data()
 
     print(CURRENCIES)
 
+    print("Start web scraping")
     set_sentiment('Not Available')
     start_web_scrapping()
+
+    print("Saving data in database")
+    save_data()
